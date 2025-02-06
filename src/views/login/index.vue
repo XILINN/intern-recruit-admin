@@ -21,6 +21,8 @@ import darkIcon from "@/assets/svg/dark.svg?component";
 import Lock from "@iconify-icons/ri/lock-fill";
 import User from "@iconify-icons/ri/user-3-fill";
 
+import * as commonApI from "@/api/login";
+
 defineOptions({
   name: "Login"
 });
@@ -37,7 +39,7 @@ const { title } = useNav();
 
 const ruleForm = reactive({
   username: "admin",
-  password: "admin123"
+  password: "123456"
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -45,16 +47,31 @@ const onLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate(valid => {
     if (valid) {
       loading.value = true;
-      setToken({
-        username: "admin",
-        roles: ["admin"],
-        accessToken: "eyJhbGciOiJIUzUxMiJ9.admin"
-      } as any);
-      // 全部采取静态路由模式
-      usePermissionStoreHook().handleWholeMenus([]);
-      addPathMatch();
-      router.push(getTopMenu(true).path);
-      message("登录成功", { type: "success" });
+      commonApI.loginByPassword({
+        username: ruleForm.username,
+        password: ruleForm.password
+      }).then((data) => {
+        // 判断后端返回的 code 是否为 0（表示登录失败）
+        if (data.code === 0) {
+          // 登录失败，显示错误消息
+          message(data.msg, { type: "error" });
+          loading.value = false;
+        } else {
+          // 登录成功，存储 token 等信息
+          setToken(data.data);
+          console.log('登录成功，存储 token 等信息', data.data);
+          // 更新权限等,在这全部使用静态路由
+          usePermissionStoreHook().handleWholeMenus([]);
+          console.log(usePermissionStoreHook().handleWholeMenus([]));
+          addPathMatch();
+          router.push(getTopMenu(true).path);
+          console.log("目标路径：", getTopMenu(true).path);
+          // 提示成功
+          message("登录成功", { type: "success" });
+          loading.value = false;
+        }
+      })
+    } else {
       loading.value = false;
     }
   });
