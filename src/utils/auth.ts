@@ -31,10 +31,7 @@ export function getToken(): DataInfo<number> {
 
 export function setToken(data: DataInfo<Date>) {
   const cookieString = JSON.stringify(data.token);
-  console.log('cookieString', cookieString);
   Cookies.set(TokenKey, cookieString);
-  console.log('Cookies.get(TokenKey)', Cookies.get(TokenKey));
-  console.log('TokenKey', TokenKey);
   
   useUserStoreHook().SET_AVATAR(data.avatar);
   useUserStoreHook().SET_USERNAME(data.username);
